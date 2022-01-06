@@ -107,3 +107,31 @@ if __name__ == "__main__":
 
     # Dump the final result to neptune
     neptune.set_property("benchmark_score", result.score)
+
+    import pdb
+    pdb.set_trace()
+
+    print("results:")
+    benchmark_name, global_score = result.benchmark_name, result.score
+    execution_time, number_scoring_function_calls = result.execution_time, result.number_scoring_function_calls
+    string1 = f"benchmark_name:{benchmark_name}, global_score:{global_score}"
+    string2 = f"execution_time:{execution_time}, number_scoring_function_calls:{number_scoring_function_calls}"
+    optimized_molecules = result.optimized_molecules
+
+    lines = [string1, string2] # + optimized_molecules
+    with open('results_for_' + benchmark_name + '.txt', 'w') as f:
+        for line in lines:
+            f.write(line)
+            f.write('\n')
+    
+    print("optimized molecules:", optimized_molecules)
+    print(string1)
+    print(string2)
+
+    # benchmark.assess_model(guacamol_generator)...
+    # return GoalDirectedBenchmarkResult(benchmark_name=self.name,
+    #                                        score=global_score,
+    #                                        optimized_molecules=sorted_scored_molecules,
+    #                                        execution_time=end_time - start_time,
+    #                                        number_scoring_function_calls=self.wrapped_objective.evaluations,
+    #                                        metadata=metadata)
