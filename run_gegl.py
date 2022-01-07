@@ -147,10 +147,10 @@ if __name__ == "__main__":
                 f.write(line)
                 f.write('\n')
     
-        print("optimized molecules:", optimized_molecules)
-        print(string1)
-        print(string2)
-        print(string3)
+        # print("optimized molecules:", optimized_molecules)
+        # print(string1)
+        # print(string2)
+        # print(string3)
 
     # benchmark.assess_model(guacamol_generator)...
     # return GoalDirectedBenchmarkResult(benchmark_name=self.name,

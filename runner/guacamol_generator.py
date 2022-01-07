@@ -36,8 +36,8 @@ class GeneticExpertGuidedLearningGenerator(GoalDirectedGenerator):
             # pdb.set_trace()
             max_new_score = max(scores)
             self.best_score_seen = max(self.best_score_seen, max_new_score)
-            print("Num function evals so far:", self.trainer.total_num_evals) # num new evals == len(scores) obviously 
-            print("best score seen:", self.best_score_seen)
+            # print("Num function evals so far:", self.trainer.total_num_evals) # num new evals == len(scores) obviously 
+            # print("best score seen:", self.best_score_seen)
             self.tracker.log({"num_func_evals:":self.trainer.total_num_evals, "best_score_seen":self.best_score_seen })
             
             self.recorder.add_list(smis=smis, scores=scores)
