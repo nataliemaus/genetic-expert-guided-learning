@@ -1,7 +1,10 @@
 import random
 import numpy as np
 import torch
-import neptune
+
+record_w_neptune = False
+if record_w_neptune:
+    import neptune
 
 from joblib import delayed
 from guacamol.utils.chemistry import canonicalize
@@ -38,6 +41,8 @@ class GeneticExpertGuidedLearningTrainer:
 
         self.init_smis = init_smis
 
+        self.total_num_evals = 0
+
     def init(self, scoring_function, device, pool):
         if len(self.init_smis) > 0:
             smis, scores = self.canonicalize_and_score_smiles(
@@ -54,8 +59,9 @@ class GeneticExpertGuidedLearningTrainer:
         expert_smis, expert_scores = self.update_storage_by_expert(scoring_function, pool)
         loss, fit_size = self.train_apprentice_step(device)
 
-        neptune.log_metric("apprentice_loss", loss)
-        neptune.log_metric("fit_size", fit_size)
+        if record_w_neptune:
+            neptune.log_metric("apprentice_loss", loss)
+            neptune.log_metric("fit_size", fit_size)
 
         return apprentice_smis + expert_smis, apprentice_scores + expert_scores
 
@@ -115,6 +121,8 @@ class GeneticExpertGuidedLearningTrainer:
         smis = list(filter(lambda smi: (smi is not None) and self.char_dict.allowed(smi), smis))
         scores = pool(delayed(scoring_function.score)(smi) for smi in smis)
         # scores = [0.0 for smi in smis]
+        print("num func evals this time:", len(scores))
+        self.total_num_evals = self.total_num_evals + len(scores)
 
         filtered_smis_and_scores = list(
             filter(
@@ -129,4 +137,11 @@ class GeneticExpertGuidedLearningTrainer:
             if len(filtered_smis_and_scores) > 0
             else ([], [])
         )
+        # import pdb
+        # pdb.set_trace()
+        # self.total_num_evals = self.total_num_evals + len(scores)
+
+        # with open('results_for_' + str(scoring_function) + '.txt', 'w') as f:
+        #     f.write(str(num_evals))
+
         return smis, scores

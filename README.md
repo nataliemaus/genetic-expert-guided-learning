@@ -14,6 +14,7 @@ pip install neptune-client
 pip install tqdm
 pip install psutil
 pip install guacamol
+pip install wandb
 ```
 
 You also need to get a (free) neptune account and modify the project_qualified_name variable for neptune initialization (in our files run_pretrain.py, run_gegl.py, and run_gegl_constrained.py):

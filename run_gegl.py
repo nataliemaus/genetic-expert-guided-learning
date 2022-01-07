@@ -16,7 +16,11 @@ from util.storage.recorder import Recorder
 from util.chemistry.benchmarks import load_benchmark
 from util.smiles.char_dict import SmilesCharDictionary
 
-import neptune
+record_w_neptune = False
+if record_w_neptune:
+    import neptune
+
+import wandb
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
@@ -45,12 +49,14 @@ if __name__ == "__main__":
     device = torch.device(0)
 
     # Initialize neptune
-    neptune.init(project_qualified_name="sungsoo.ahn/deep-molecular-optimization")
-    experiment = neptune.create_experiment(name="gegl", params=vars(args))
-    neptune.append_tag(args.benchmark_id)
+    if record_w_neptune: 
+        neptune.init(project_qualified_name="sungsoo.ahn/deep-molecular-optimization")
+        experiment = neptune.create_experiment(name="gegl", params=vars(args))
+        neptune.append_tag(args.benchmark_id)
 
     # Load benchmark, i.e., the scoring function and its corresponding protocol
     benchmark, scoring_num_list = load_benchmark(args.benchmark_id)
+    benchmark_name = benchmark.name
 
     # Load character directory used for mapping atoms to integers
     char_dict = SmilesCharDictionary(dataset=args.dataset, max_smi_len=args.max_smiles_length)
@@ -89,8 +95,17 @@ if __name__ == "__main__":
         init_smis=[],
     )
 
+    print("init total num evals:", trainer.total_num_evals)
     # Prepare recorder that takes care of intermediate logging
     recorder = Recorder(scoring_num_list=scoring_num_list, record_filtered=args.record_filtered)
+
+    #prep wandb tracker 
+    init_dict = {"benchmark":benchmark_name}
+    tracker = wandb.init(
+                project='gegl',
+                entity='nmaus',
+                config=init_dict,
+            )
 
     # Prepare our version of GoalDirectedGenerator for evaluating our algorithm
     guacamol_generator = GeneticExpertGuidedLearningGenerator(
@@ -100,13 +115,17 @@ if __name__ == "__main__":
         device=device,
         scoring_num_list=scoring_num_list,
         num_jobs=args.num_jobs,
+        tracker=tracker
     )
 
     # Run the experiment
     result = benchmark.assess_model(guacamol_generator)
 
+    print("FINAL num evals:", trainer.total_num_evals)
+
     # Dump the final result to neptune
-    neptune.set_property("benchmark_score", result.score)
+    if record_w_neptune :
+        neptune.set_property("benchmark_score", result.score)
 
     import pdb
     pdb.set_trace()
@@ -114,11 +133,17 @@ if __name__ == "__main__":
     print("results:")
     benchmark_name, global_score = result.benchmark_name, result.score
     execution_time, number_scoring_function_calls = result.execution_time, result.number_scoring_function_calls
-    string1 = f"benchmark_name:{benchmark_name}, global_score:{global_score}"
+    metadata = result.metadata
+    top_1, top_10, top_100 = metadata['top_1'], metadata['top_10'], metadata['top_100'] 
+    # dict_keys(['top_1', 'top_10', 'top_100', 'internal_similarity_max', 'internal_similarity_mean', 'internal_similarity_histogram_density', 'internal_similarity_histogram_bins'])
+    sim_max, sim_mean = metadata['internal_similarity_max'], metadata['internal_similarity_mean']
+    string1 = f"benchmark_name:{benchmark_name}, top1:{top_1}, top10:{top_10}, top100:{top_100}, global_score:{global_score}"
     string2 = f"execution_time:{execution_time}, number_scoring_function_calls:{number_scoring_function_calls}"
-    optimized_molecules = result.optimized_molecules
+    string3 = f"internal_similarity_max:{sim_max}, internal_similarity_mean:{sim_mean}"
 
-    lines = [string1, string2] # + optimized_molecules
+    optimized_molecules = result.optimized_molecules
+    optimized_molecules_str = [str(score_mol_tuple) for score_mol_tuple in optimized_molecules]
+    lines = [string1, string2, string3] + optimized_molecules_str 
     with open('results_for_' + benchmark_name + '.txt', 'w') as f:
         for line in lines:
             f.write(line)
@@ -127,6 +152,7 @@ if __name__ == "__main__":
     print("optimized molecules:", optimized_molecules)
     print(string1)
     print(string2)
+    print(string3)
 
     # benchmark.assess_model(guacamol_generator)...
     # return GoalDirectedBenchmarkResult(benchmark_name=self.name,
@@ -135,3 +161,6 @@ if __name__ == "__main__":
     #                                        execution_time=end_time - start_time,
     #                                        number_scoring_function_calls=self.wrapped_objective.evaluations,
     #                                        metadata=metadata)
+
+# CUDA_VISIBLE_DEVICES=0 python run_gegl.py --benchmark_id 16 --dataset guacamol --apprentice_load_dir ./resource/checkpoint/guacamol
+# --record_filtered

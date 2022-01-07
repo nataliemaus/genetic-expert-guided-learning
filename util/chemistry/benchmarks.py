@@ -9,7 +9,7 @@ from rdkit.Chem import Descriptors, Mol, rdMolDescriptors
 from rdkit.Chem import RDConfig
 
 sys.path.append(os.path.join(RDConfig.RDContribDir, "SA_Score"))
-import sascorer
+# import sascorer
 
 import networkx as nx
 

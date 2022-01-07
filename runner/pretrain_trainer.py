@@ -1,7 +1,9 @@
 import os
 from tqdm import tqdm
 import torch
-import neptune
+record_w_neptune = False
+if record_w_neptune:
+    import neptune
 from util.smiles.function import smis_to_actions
 
 
@@ -28,6 +30,7 @@ class PreTrainer:
                 loss = self.generator_handler.train_on_action_batch(
                     actions=actions, device=self.device
                 )
-                neptune.log_metric("loss", loss)
+                if record_w_neptune:
+                    neptune.log_metric("loss", loss)
 
             self.generator_handler.save(self.save_dir)

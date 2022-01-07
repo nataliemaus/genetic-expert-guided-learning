@@ -3,7 +3,9 @@ from functools import total_ordering
 import numpy as np
 import random
 import json
-import neptune
+record_w_neptune = False
+if record_w_neptune:
+    import neptune
 
 from util.chemistry.rd_filter import RDFilter
 
@@ -102,23 +104,26 @@ class Recorder:
 
     def log(self):
         score = self.evaluate(rd_filtered=False)
-        neptune.log_metric(f"{self.prefix}eval_optimized_score", score)
+        if record_w_neptune:
+            neptune.log_metric(f"{self.prefix}eval_optimized_score", score)
 
         if self.record_filtered:
             filtered_score = self.evaluate(rd_filtered=True)
-            neptune.log_metric(f"{self.prefix}eval_filtered_score", filtered_score)
+            if record_w_neptune:
+                neptune.log_metric(f"{self.prefix}eval_filtered_score", filtered_score)
 
         self.t += 1
 
     def log_final(self):
-        for elem in self.elems:
-            neptune.log_text("optimized_smi", elem.smi)
-            neptune.log_metric("optimized_score", elem.score)
+        if record_w_neptune:
+            for elem in self.elems:
+                neptune.log_text("optimized_smi", elem.smi)
+                neptune.log_metric("optimized_score", elem.score)
 
-        if self.record_filtered:
-            for elem in self.filtered_elems:
-                neptune.log_text("filtered_smi", elem.smi)
-                neptune.log_metric("filtered_score", elem.score)
+            if self.record_filtered:
+                for elem in self.filtered_elems:
+                    neptune.log_text("filtered_smi", elem.smi)
+                    neptune.log_metric("filtered_score", elem.score)
 
     def get_topk(self, k):
         self.elems = sorted(self.elems, reverse=True)[:k]
