@@ -95,7 +95,7 @@ if __name__ == "__main__":
         init_smis=[],
     )
 
-    print("init total num evals:", trainer.total_num_evals)
+    # print("init total num evals:", trainer.total_num_evals)
     # Prepare recorder that takes care of intermediate logging
     recorder = Recorder(scoring_num_list=scoring_num_list, record_filtered=args.record_filtered)
 
@@ -121,38 +121,36 @@ if __name__ == "__main__":
     # Run the experiment
     result = benchmark.assess_model(guacamol_generator)
 
-    print("FINAL num evals:", trainer.total_num_evals)
+    print("FINAL NUM EVALS:", trainer.total_num_evals)
 
     # Dump the final result to neptune
     if record_w_neptune :
         neptune.set_property("benchmark_score", result.score)
 
-    import pdb
-    pdb.set_trace()
+    save_results_in_file=False
+    if save_results_in_file:
+        benchmark_name, global_score = result.benchmark_name, result.score
+        execution_time, number_scoring_function_calls = result.execution_time, result.number_scoring_function_calls
+        metadata = result.metadata
+        top_1, top_10, top_100 = metadata['top_1'], metadata['top_10'], metadata['top_100'] 
+        # dict_keys(['top_1', 'top_10', 'top_100', 'internal_similarity_max', 'internal_similarity_mean', 'internal_similarity_histogram_density', 'internal_similarity_histogram_bins'])
+        sim_max, sim_mean = metadata['internal_similarity_max'], metadata['internal_similarity_mean']
+        string1 = f"benchmark_name:{benchmark_name}, top1:{top_1}, top10:{top_10}, top100:{top_100}, global_score:{global_score}"
+        string2 = f"execution_time:{execution_time}, number_scoring_function_calls:{number_scoring_function_calls}"
+        string3 = f"internal_similarity_max:{sim_max}, internal_similarity_mean:{sim_mean}"
 
-    print("results:")
-    benchmark_name, global_score = result.benchmark_name, result.score
-    execution_time, number_scoring_function_calls = result.execution_time, result.number_scoring_function_calls
-    metadata = result.metadata
-    top_1, top_10, top_100 = metadata['top_1'], metadata['top_10'], metadata['top_100'] 
-    # dict_keys(['top_1', 'top_10', 'top_100', 'internal_similarity_max', 'internal_similarity_mean', 'internal_similarity_histogram_density', 'internal_similarity_histogram_bins'])
-    sim_max, sim_mean = metadata['internal_similarity_max'], metadata['internal_similarity_mean']
-    string1 = f"benchmark_name:{benchmark_name}, top1:{top_1}, top10:{top_10}, top100:{top_100}, global_score:{global_score}"
-    string2 = f"execution_time:{execution_time}, number_scoring_function_calls:{number_scoring_function_calls}"
-    string3 = f"internal_similarity_max:{sim_max}, internal_similarity_mean:{sim_mean}"
-
-    optimized_molecules = result.optimized_molecules
-    optimized_molecules_str = [str(score_mol_tuple) for score_mol_tuple in optimized_molecules]
-    lines = [string1, string2, string3] + optimized_molecules_str 
-    with open('results_for_' + benchmark_name + '.txt', 'w') as f:
-        for line in lines:
-            f.write(line)
-            f.write('\n')
+        optimized_molecules = result.optimized_molecules
+        optimized_molecules_str = [str(score_mol_tuple) for score_mol_tuple in optimized_molecules]
+        lines = [string1, string2, string3] + optimized_molecules_str 
+        with open('results_for_' + benchmark_name + '.txt', 'w') as f:
+            for line in lines:
+                f.write(line)
+                f.write('\n')
     
-    print("optimized molecules:", optimized_molecules)
-    print(string1)
-    print(string2)
-    print(string3)
+        print("optimized molecules:", optimized_molecules)
+        print(string1)
+        print(string2)
+        print(string3)
 
     # benchmark.assess_model(guacamol_generator)...
     # return GoalDirectedBenchmarkResult(benchmark_name=self.name,

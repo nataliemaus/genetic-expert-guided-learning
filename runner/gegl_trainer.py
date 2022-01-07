@@ -121,7 +121,7 @@ class GeneticExpertGuidedLearningTrainer:
         smis = list(filter(lambda smi: (smi is not None) and self.char_dict.allowed(smi), smis))
         scores = pool(delayed(scoring_function.score)(smi) for smi in smis)
         # scores = [0.0 for smi in smis]
-        print("num func evals this time:", len(scores))
+        # print("num func evals this time:", len(scores))
         self.total_num_evals = self.total_num_evals + len(scores)
 
         filtered_smis_and_scores = list(
