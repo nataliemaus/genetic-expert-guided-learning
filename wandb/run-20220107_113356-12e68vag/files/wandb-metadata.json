@@ -1,0 +1,31 @@
+{
+    "os": "Linux-5.8.0-38-generic-x86_64-with-debian-bullseye-sid",
+    "python": "3.6.13",
+    "heartbeatAt": "2022-01-07T16:34:01.397054",
+    "startedAt": "2022-01-07T16:33:56.372002",
+    "docker": null,
+    "gpu": "NVIDIA TITAN RTX",
+    "gpu_count": 2,
+    "cpu_count": 16,
+    "cuda": null,
+    "args": [
+        "--benchmark_id",
+        "17",
+        "--dataset",
+        "guacamol",
+        "--apprentice_load_dir",
+        "./resource/checkpoint/guacamol"
+    ],
+    "state": "running",
+    "program": "run_gegl.py",
+    "codePath": "run_gegl.py",
+    "git": {
+        "remote": "https://github.com/nataliemaus/genetic-expert-guided-learning.git",
+        "commit": "8a88975bcb762b1f00a610fc9f5adc06161cfe19"
+    },
+    "email": "natalietmaus@gmail.com",
+    "root": "/home/nmaus/genetic-expert-guided-learning",
+    "host": "ubuntu20",
+    "username": "nmaus",
+    "executable": "/home/nmaus/anaconda3/envs/dmo/bin/python"
+}

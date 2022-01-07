@@ -19,13 +19,14 @@ pip install wandb
 ## 2. Run command: 
 CUDA_VISIBLE_DEVICES=$GPU_DEVICE python run_gegl.py --benchmark_id $BENCHMARK_ID --dataset guacamol --apprentice_load_dir ./resource/checkpoint/guacamol
 
+### GOAL: run above command with $BENCHMARK_ID=8-19 inclusive 
+#### (ids 8-19 correspond to guacamol benchmarks we want to compare to)
+#### Each run will take ~3 hours
+
 ## 3. Enter wandb API Key Below to track w/ wandb
 dfa956c5bfb9fa492ebf9adede99093772919518
 
 ### Results will be tracked and recorded here:
 https://wandb.ai/nmaus/gegl?workspace=user-nmaus
 
-## GOAL: 
-### Run above command with $BENCHMARK_ID=8-19 inclusive 
-### (ids 8-19 correspond to guacamol benchmarks we want to compare to)
-#### Each run will take ~3 hours
+
