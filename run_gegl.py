@@ -127,10 +127,11 @@ if __name__ == "__main__":
     if record_w_neptune :
         neptune.set_property("benchmark_score", result.score)
 
-    save_results_in_file=False
+    save_results_in_file=True
     if save_results_in_file:
+        number_scoring_function_calls = trainer.total_num_evals
         benchmark_name, global_score = result.benchmark_name, result.score
-        execution_time, number_scoring_function_calls = result.execution_time, result.number_scoring_function_calls
+        execution_time = result.execution_time
         metadata = result.metadata
         top_1, top_10, top_100 = metadata['top_1'], metadata['top_10'], metadata['top_100'] 
         # dict_keys(['top_1', 'top_10', 'top_100', 'internal_similarity_max', 'internal_similarity_mean', 'internal_similarity_histogram_density', 'internal_similarity_histogram_bins'])
