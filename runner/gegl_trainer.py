@@ -8,7 +8,45 @@ if record_w_neptune:
 
 from joblib import delayed
 from guacamol.utils.chemistry import canonicalize
+from rdkit import Chem
+from rdkit.Chem import Crippen
+from rdkit.Chem import rdmolops
+from moses.metrics.SA_Score import sascorer
+import networkx as nx
 
+def _cycle_score(mol):
+    cycle_list = nx.cycle_basis(nx.Graph(rdmolops.GetAdjacencyMatrix(mol)))
+    if len(cycle_list) == 0:
+        cycle_length = 0
+    else:
+        cycle_length = max([len(j) for j in cycle_list])
+    if cycle_length <= 6:
+        cycle_length = 0
+    else:
+        cycle_length = cycle_length - 6
+    return cycle_length
+
+def smile_to_penalized_logP(smile):
+    """ calculate penalized logP for a given smiles string """
+    mol = Chem.MolFromSmiles(smile)
+    if mol is None:
+        return None
+    logp = Crippen.MolLogP(mol)
+    sa = sascorer.calculateScore(mol)
+    cycle_length = _cycle_score(mol)
+    """
+    Calculate final adjusted score.
+    These magic numbers are the empirical means and
+    std devs of the dataset.
+    I agree this is a weird way to calculate a score...
+    but this is what previous papers did!
+    """
+    score = (
+            (logp - 2.45777691) / 1.43341767
+            + (-sa + 3.05352042) / 0.83460587
+            + (-cycle_length - -0.04861121) / 0.28746695
+    )
+    return max(score, -float("inf"))
 
 class GeneticExpertGuidedLearningTrainer:
     def __init__(
@@ -119,7 +157,8 @@ class GeneticExpertGuidedLearningTrainer:
             delayed(lambda smi: canonicalize(smi, include_stereocenters=False))(smi) for smi in smis
         )
         smis = list(filter(lambda smi: (smi is not None) and self.char_dict.allowed(smi), smis))
-        scores = pool(delayed(scoring_function.score)(smi) for smi in smis)
+
+        scores = pool(delayed(smile_to_penalized_logP)(smi) for smi in smis)
         # scores = [0.0 for smi in smis]
         # print("num func evals this time:", len(scores))
         self.total_num_evals = self.total_num_evals + len(scores)

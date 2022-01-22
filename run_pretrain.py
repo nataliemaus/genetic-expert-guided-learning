@@ -10,7 +10,7 @@ from model.neural_apprentice import SmilesGenerator, SmilesGeneratorHandler
 from util.smiles.dataset import load_dataset
 from util.smiles.char_dict import SmilesCharDictionary
 
-import neptune
+# import neptune
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
@@ -38,9 +38,9 @@ if __name__ == "__main__":
     random.seed(0)
 
     # Initialize neptune
-    neptune.init(project_qualified_name="sungsoo.ahn/deep-molecular-optimization")
-    neptune.create_experiment(name="pretrain", params=vars(args))
-    neptune.append_tag(args.dataset)
+    # neptune.init(project_qualified_name="sungsoo.ahn/deep-molecular-optimization")
+    # neptune.create_experiment(name="pretrain", params=vars(args))
+    # neptune.append_tag(args.dataset)
 
     # Load character dict and dataset
     char_dict = SmilesCharDictionary(dataset=args.dataset, max_smi_len=args.max_smiles_length)
