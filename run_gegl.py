@@ -43,6 +43,7 @@ if __name__ == "__main__":
     parser.add_argument("--num_apprentice_training_steps", type=int, default=8)
     parser.add_argument("--num_jobs", type=int, default=8)
     parser.add_argument("--record_filtered", action="store_true")
+    parser.add_argument("--wandb_entity", type=str, default="nmaus")
     args = parser.parse_args()
 
     # Prepare CUDA device
@@ -102,10 +103,10 @@ if __name__ == "__main__":
     #prep wandb tracker 
     init_dict = {"benchmark":benchmark_name}
     tracker = wandb.init(
-                project='gegl',
-                entity='nmaus',
-                config=init_dict,
-            )
+        project='gegl',
+        entity=args.wandb_entity,
+        config=init_dict,
+    )
 
     # Prepare our version of GoalDirectedGenerator for evaluating our algorithm
     guacamol_generator = GeneticExpertGuidedLearningGenerator(
